@@ -4,6 +4,7 @@ import os
 import random
 import aiohttp
 import json
+import wolframalpha
 
 # Importings and loadings
 from dotenv import load_dotenv
@@ -15,6 +16,7 @@ load_dotenv()
 
 # Grab the dcbot api tokens
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+wolfram_client = wolframalpha.Client('5TEAHK-XKXRAUXUEW') 
 
 # Get all the permissions to dcbot
 intents=discord.Intents.default()
@@ -54,6 +56,47 @@ async def status(ctx, member: discord.Member = None):
     if member is None:
         member = ctx.message.author
     await ctx.send(f'{member.name} is currently {member.status}')
+
+#Homework solver(not working now)
+@bot.command()
+async def ask(ctx, *, question):
+    try:
+        # Use wolfram to ask and get answer.
+        res = wolfram_client.query(question)
+        answer = next(res.results).text
+        await ctx.send(answer)
+    except Exception as e:
+        await ctx.send(f"An error occurred: {str(e)}")
+
+# A poll command
+@bot.command(name='poll')
+async def poll(ctx, question, *options: str):
+    if len(options) <= 1:
+        await ctx.send('You need more than one option to start a poll!')
+        return
+    if len(options) > 10:
+        await ctx.send('You cannot make a poll for more than 10 things!')
+        return
+
+    # Different choices.
+    reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
+
+    # Loop through number of options
+    description = []
+    for x, option in enumerate(options):
+        #Each line an option
+        description += '\n {} {}'.format(reactions[x], option)
+    
+    # The poll page
+    embed = discord.Embed(title=question, description=''.join(description))
+    react_message = await ctx.send(embed=embed)
+    
+    #Update the polling result
+    for reaction in reactions[:len(options)]:
+        await react_message.add_reaction(reaction)
+    embed.set_footer(text='Poll ID: {}'.format(react_message.id))
+    #Include the poll id
+    await react_message.edit(embed=embed)
 
 # Small translator, based on google translate
 @bot.command()
