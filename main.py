@@ -5,6 +5,7 @@ import random
 import aiohttp
 import json
 import wolframalpha
+import requests
 
 # Importings and loadings
 from dotenv import load_dotenv
@@ -16,6 +17,7 @@ load_dotenv()
 
 # Grab the dcbot api tokens
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+OPENAI_API_KEY=os.getenv("OPENAI_API_KEY")
 wolfram_client = wolframalpha.Client('5TEAHK-XKXRAUXUEW') 
 
 # Get all the permissions to dcbot
@@ -49,6 +51,32 @@ async def on_member_update(before, after):
         #channel = bot.get_channel(1127200981512372264) # Replace 'ID' with your channel ID
         #await channel.send(f'{before.name} has changed status from {before.status} to {after.status}.')
 
+# Use openai's model to create a gpt chatbox.      
+def generate_response(message):
+    openai_api_url = "https://api.openai.com/v1/engines/text-davinci-002/completions"
+    headers = {
+        #json type.
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+    }
+    data = {
+        # Prompt means the asking message.
+        "prompt": message,
+        # Maximum length of output.
+        "max_tokens": 60,
+    }
+
+    response = requests.post(openai_api_url, headers=headers, json=data)
+    #print(response.status_code)
+    #print(response.json())
+    #Return the answer.
+    return response.json()["choices"][0]["text"]
+
+@bot.command()
+async def gptModel(ctx, *,question):
+    #Return the answer.
+    await ctx.send(f"{generate_response(question)}")
+    
 # Print status of member in discord server
 @bot.command()
 async def status(ctx, member: discord.Member = None):
