@@ -70,7 +70,12 @@ def generate_response(message):
     #print(response.status_code)
     #print(response.json())
     #Return the answer.
-    return response.json()["choices"][0]["text"]
+    #return response.json()["choices"][0]["text"]
+    try:
+        return response.json()["choices"][0]["text"]
+    except KeyError:
+        print("Received invalid response: ", response.json())
+        raise
 
 @bot.command()
 async def gptModel(ctx, *,question):
