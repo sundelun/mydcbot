@@ -11,6 +11,8 @@ import requests
 from dotenv import load_dotenv
 from discord.ext import commands
 from googletrans import Translator
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 # Loads the .env file
 load_dotenv()
@@ -29,20 +31,28 @@ intents.members = True
 #Create an instance of bot
 bot = commands.Bot(command_prefix='!',intents=intents)
 
+quotes=["春风若有怜花意，可否与我再少年","home is where you are","不必太张扬，是花自然香","穷不怪父，丑不怪母，孝不比兄，苦不责妻，气不凶子，一生向阳"]
+#Daily quote
+async def day_quote():
+    quote=random.choice(quotes)
+    channel=bot.get_channel(1127200981512372264)
+    await channel.send(quote)
 # dcbot gets activated
 @bot.event
 async def on_ready():
-	# Number of how many servers dcbot has connected to
-	guild_count = 0
-
+    # Sends a quote every day at 9:00
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(day_quote, CronTrigger(hour="9", minute="0"))
+    scheduler.start()
+    # Number of how many servers dcbot has connected to
+    guild_count = 0
 	# Loop through all bots's guilds/server
-	for guild in bot.guilds:
-		print(f"- {guild.id} (name: {guild.name})")
+    for guild in bot.guilds:
+        print(f"- {guild.id} (name: {guild.name})")
+        guild_count = guild_count + 1
 
-		guild_count = guild_count + 1
-
-	print("GAP is in " + str(guild_count) + " guilds.")
-
+    print("GAP is in " + str(guild_count) + " guilds.")
+    
 # Should print the updated member status, but not working
 @bot.event
 async def on_member_update(before, after):
@@ -176,7 +186,7 @@ async def weather(ctx, *, city: str):
         await ctx.send(f'The weather in {city} is currently {description} with a temperature of {temp}°C')
     else:
         await ctx.send(f'Sorry, I could not find weather information for the city "{city}". Please make sure the city name is spelled correctly.')
-        
+       
 # Detect the message received.
 @bot.event
 async def on_message(message):
@@ -190,14 +200,19 @@ async def on_message(message):
     # Print the information about message.
     print(f'Message {user_message} by {username} on {channel}')
     
+    # Auto translate other non-english text to english
+    translator_mes=Translator()
+    language=translator_mes.detect(user_message).lang
     # In case not annoying other channel.
     if channel == "bot-test":
-        
         #Convert the integer to binary
         if user_message.isdigit():
             binary=format(int(user_message),'010b')
             await message.channel.send(f'The binary representation of {user_message} is {binary}')
-            
+        
+        #Send the translated text
+        if language != "en":
+            await message.channel.send((translator_mes.translate(user_message,dest='en')).text)
         # Some small text responds.
         if user_message.lower() == "hello" or user_message.lower() == "hi":
             await message.channel.send(f'Now, say my name.')
@@ -212,6 +227,9 @@ async def on_message(message):
                      "What do you call a gazelle in a \
                      lions territory? Denzel."]
             await message.channel.send(random.choice(jokes))
+        #test the daily quote
+        elif user_message.lower() == "test":
+            await day_quote()
     
     # In order for the all the bots.command to work.
     await bot.process_commands(message)
