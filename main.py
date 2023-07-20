@@ -6,6 +6,7 @@ import aiohttp
 import json
 import wolframalpha
 import requests
+import psycopg2
 
 # Importings and loadings
 from dotenv import load_dotenv
@@ -20,6 +21,10 @@ load_dotenv()
 # Grab the dcbot api tokens
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 OPENAI_API_KEY=os.getenv("OPENAI_API_KEY")
+USER=os.getenv("USER")
+PASSWORD=os.getenv("PASSWORD")
+DATABASE=os.getenv("DATABASE")
+TABLE=os.getenv("TABLE")
 wolfram_client = wolframalpha.Client('5TEAHK-XKXRAUXUEW') 
 
 # Get all the permissions to dcbot
@@ -31,10 +36,25 @@ intents.members = True
 #Create an instance of bot
 bot = commands.Bot(command_prefix='!',intents=intents)
 
-quotes=["春风若有怜花意，可否与我再少年","home is where you are","不必太张扬，是花自然香","穷不怪父，丑不怪母，孝不比兄，苦不责妻，气不凶子，一生向阳"]
+#quotes=["春风若有怜花意，可否与我再少年","home is where you are","不必太张扬，是花自然香","穷不怪父，丑不怪母，孝不比兄，苦不责妻，气不凶子，一生向阳"]
+#Connect with database
+DATABASE_URL = f"postgresql://{USER}:{PASSWORD}@localhost:5432/{DATABASE}"
+conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+cur = conn.cursor()
 #Daily quote
 async def day_quote():
-    quote=random.choice(quotes)
+    #quote=random.choice(quotes)
+    #Fetch all informations from motvation
+    cur.execute(f"SELECT sentence FROM {TABLE};")
+    #Key line of code
+    rows = cur.fetchall()
+    quotes2=[]
+    len=0
+    for row in rows:
+        quotes2.append(row[0])
+        len += 1
+    print(len)
+    quote=random.choice(quotes2)
     channel=bot.get_channel(1127200981512372264)
     await channel.send(quote)
 # dcbot gets activated
@@ -91,7 +111,14 @@ def generate_response(message):
 async def gptModel(ctx, *,question):
     #Return the answer.
     await ctx.send(f"{generate_response(question)}")
-    
+
+# Command to add motivation sentence to sql table
+@bot.command()
+async def addSentence(ctx, *,text):
+    query = f"INSERT INTO {TABLE} (sentence) VALUES (%s)"
+    cur.execute(query, (text,))
+    # We have to commit changes in postgresql to save
+    conn.commit()
 # Print status of member in discord server
 @bot.command()
 async def status(ctx, member: discord.Member = None):
