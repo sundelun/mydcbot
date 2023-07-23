@@ -25,6 +25,7 @@ USER=os.getenv("USER")
 PASSWORD=os.getenv("PASSWORD")
 DATABASE=os.getenv("DATABASE")
 TABLE=os.getenv("TABLE")
+DATABASE_URL=os.getenv("DATABASE_URL")
 wolfram_client = wolframalpha.Client('5TEAHK-XKXRAUXUEW') 
 
 # Get all the permissions to dcbot
@@ -38,7 +39,7 @@ bot = commands.Bot(command_prefix='!',intents=intents)
 
 #quotes=["春风若有怜花意，可否与我再少年","home is where you are","不必太张扬，是花自然香","穷不怪父，丑不怪母，孝不比兄，苦不责妻，气不凶子，一生向阳"]
 #Connect with database
-DATABASE_URL = f"postgresql://{USER}:{PASSWORD}@localhost:5432/{DATABASE}"
+#DATABASE_URL = f"postgresql://{USER}:{PASSWORD}@localhost:5432/{DATABASE}"
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 cur = conn.cursor()
 #Daily quote
