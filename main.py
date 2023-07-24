@@ -63,6 +63,7 @@ async def day_quote():
 # dcbot gets activated
 @bot.event
 async def on_ready():
+    await bot.wait_until_ready()
     # Sends a quote every day at 9:00
     scheduler = AsyncIOScheduler()
     scheduler.add_job(day_quote, CronTrigger(hour="9", minute="0"))
@@ -76,7 +77,6 @@ async def on_ready():
 
     print("GAP is in " + str(guild_count) + " guilds.")
     
-    await bot.wait_until_ready()
     loop=bot.get_guild(SERVER_ID)
     if loop is None:
         print("WHY")
