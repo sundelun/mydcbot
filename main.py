@@ -25,7 +25,7 @@ USER=os.getenv("USER")
 PASSWORD=os.getenv("PASSWORD")
 DATABASE=os.getenv("DATABASE")
 TABLE=os.getenv("TABLE")
-SERVER_ID=os.getenv("SERVER_ID")
+SERVER_ID=int(os.getenv("SERVER_ID"))
 RECORD=os.getenv("RECORD")
 DATABASE_URL=os.getenv("DATABASE_URL")
 wolfram_client = wolframalpha.Client('5TEAHK-XKXRAUXUEW') 
@@ -63,7 +63,6 @@ async def day_quote():
 # dcbot gets activated
 @bot.event
 async def on_ready():
-    await bot.wait_until_ready()
     # Sends a quote every day at 9:00
     scheduler = AsyncIOScheduler()
     scheduler.add_job(day_quote, CronTrigger(hour="9", minute="0"))
@@ -78,15 +77,14 @@ async def on_ready():
     print("GAP is in " + str(guild_count) + " guilds.")
     
     loop=bot.get_guild(SERVER_ID)
-    if loop is None:
-        print("WHY")
-    else:
-        print("yes")
-    #for member in loop.members:
-    #    temp=member.name
-    #    query=f"INSERT INTO {RECORD} (username) VALUES (%s)"
-    #    cur.execute(query,(temp,))
-    #    conn.commit()
+    cur.execute(f"SELECT COUNT(*) FROM {RECORD}")
+    rows=cur.fetchone()
+    if int(rows[0])==0:
+        for member in loop.members:
+            temp=member.name
+            query=f"INSERT INTO {RECORD} (username) VALUES (%s)"
+            cur.execute(query,(temp,))
+            conn.commit()
     
 # Should print the updated member status, but not working
 @bot.event
