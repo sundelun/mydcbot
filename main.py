@@ -25,6 +25,8 @@ USER=os.getenv("USER")
 PASSWORD=os.getenv("PASSWORD")
 DATABASE=os.getenv("DATABASE")
 TABLE=os.getenv("TABLE")
+SERVER_ID=os.getenv("SERVER_ID")
+RECORD=os.getenv("RECORD")
 DATABASE_URL=os.getenv("DATABASE_URL")
 wolfram_client = wolframalpha.Client('5TEAHK-XKXRAUXUEW') 
 
@@ -73,6 +75,13 @@ async def on_ready():
         guild_count = guild_count + 1
 
     print("GAP is in " + str(guild_count) + " guilds.")
+    
+    loop=bot.get_guild(SERVER_ID)
+    for member in loop.members:
+        temp=member.name
+        query=f"INSERT INTO {RECORD} (username) VALUES (%s)"
+        cur.execute(query,(temp,))
+        conn.commit()
     
 # Should print the updated member status, but not working
 @bot.event
@@ -229,8 +238,9 @@ async def on_message(message):
     print(f'Message {user_message} by {username} on {channel}')
     
     # Auto translate other non-english text to english
-    translator_mes=Translator()
-    language=translator_mes.detect(user_message).lang
+    if not message.attachments:
+        translator_mes=Translator()
+        language=translator_mes.detect(user_message).lang
     # In case not annoying other channel.
     if channel == "bot-test":
         #Convert the integer to binary
