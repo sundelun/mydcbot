@@ -76,6 +76,7 @@ async def on_ready():
 
     print("GAP is in " + str(guild_count) + " guilds.")
     
+    await bot.wait_until_ready()
     loop=bot.get_guild(SERVER_ID)
     if loop is None:
         print("WHY")
