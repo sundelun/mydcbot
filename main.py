@@ -77,11 +77,15 @@ async def on_ready():
     print("GAP is in " + str(guild_count) + " guilds.")
     
     loop=bot.get_guild(SERVER_ID)
-    for member in loop.members:
-        temp=member.name
-        query=f"INSERT INTO {RECORD} (username) VALUES (%s)"
-        cur.execute(query,(temp,))
-        conn.commit()
+    if loop is None:
+        print("WHY")
+    else:
+        print("yes")
+    #for member in loop.members:
+    #    temp=member.name
+    #    query=f"INSERT INTO {RECORD} (username) VALUES (%s)"
+    #    cur.execute(query,(temp,))
+    #    conn.commit()
     
 # Should print the updated member status, but not working
 @bot.event
