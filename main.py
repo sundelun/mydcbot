@@ -232,6 +232,14 @@ async def weather(ctx, *, city: str):
 async def on_message(message):
 	# Bot and user have to be different.
     if message.author == bot.user:
+        query=f"UPDATE {RECORD} SET exp=exp+5 WHERE username='{bot.user.name}'"
+        print(query)
+        try:
+            cur.execute(query)
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            print("An error occurred", e)
         return
     username = str(message.author).split("#")[0]
     channel = str(message.channel.name)
@@ -242,7 +250,7 @@ async def on_message(message):
     print(f'Message {user_message} by {username} on {channel}')
     
     # Add exp to each user
-    if not message.attachments:
+    if len(user_message)>0:
         query=f"UPDATE {RECORD} SET exp=exp+5 WHERE username='{username}'"
         print(query)
         try:
@@ -251,8 +259,18 @@ async def on_message(message):
         except Exception as e:
             conn.rollback()
             print("An error occurred", e)
+    if message.attachments:
+        value = len(message.attachments)*10
+        query=f"UPDATE {RECORD} SET exp=exp+{value} WHERE username='{username}'"
+        print(query)
+        try:
+            cur.execute(query)
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            print("An error occurred", e)
     # Auto translate other non-english text to english
-    if not message.attachments:
+    if len(user_message)>0:
         translator_mes=Translator()
         language=translator_mes.detect(user_message).lang
     # In case not annoying other channel.
@@ -263,7 +281,7 @@ async def on_message(message):
             await message.channel.send(f'The binary representation of {user_message} is {binary}')
         
         #Send the translated text
-        if language != "en":
+        if len(user_message)>0 and language != "en":
             await message.channel.send((translator_mes.translate(user_message,dest='en')).text)
         # Some small text responds.
         if user_message.lower() == "hello" or user_message.lower() == "hi":
