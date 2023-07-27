@@ -236,6 +236,7 @@ async def on_message(message):
     username = str(message.author).split("#")[0]
     channel = str(message.channel.name)
     user_message = message.content
+    print(len(user_message))
     
     # Print the information about message.
     print(f'Message {user_message} by {username} on {channel}')
