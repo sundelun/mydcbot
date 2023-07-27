@@ -242,7 +242,7 @@ async def on_message(message):
     
     # Add exp to each user
     if not message.attachments:
-        query=f"UPDATE {RECORD} SET exp=exp+5 WHERE username={username}"
+        query=f"UPDATE {RECORD} SET exp=exp+5 WHERE username='{username}'"
         print(query)
         try:
             cur.execute(query)
