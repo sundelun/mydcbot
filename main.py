@@ -240,6 +240,16 @@ async def on_message(message):
     # Print the information about message.
     print(f'Message {user_message} by {username} on {channel}')
     
+    # Add exp to each user
+    if not message.attachments:
+        query=f"UPDATE {RECORD} SET exp=exp+5 WHERE username={username}"
+        print(query)
+        try:
+            cur.execute(query)
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            print("An error occurred", e)
     # Auto translate other non-english text to english
     if not message.attachments:
         translator_mes=Translator()
