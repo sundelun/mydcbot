@@ -160,7 +160,7 @@ async def view(ctx):
     data=cur.fetchall()
     embed = discord.Embed(title="Level")
     for row in data:
-        embed.add_field(name=row[0],level=row[1],exp=row[2],inline=False)
+        embed.add_field(name=row[0],value=row[1],inline=False)
     await ctx.send(embed=embed)
 # Command to add motivation sentence to sql table
 @bot.command()
