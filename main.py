@@ -35,6 +35,7 @@ intents=discord.Intents.default()
 intents.message_content=True
 intents.presences = True
 intents.members = True
+intents.guilds=True
 
 #Create an instance of bot
 bot = commands.Bot(command_prefix='!',intents=intents)
@@ -86,13 +87,41 @@ async def on_ready():
             cur.execute(query,(temp,))
             conn.commit()
     
-# Should print the updated member status, but not working
+
 @bot.event
 async def on_member_update(before, after):
+    if before.nick != after.nick:  # If their nicknames aren't equal, then their nick changed.
+        print("is it changed?")
+        #if before.nick is None:  # They didn't have a nickname before
+        #    msg = f"{after.mention} changed their username from {before.name} to {after.name}"
+        #else:  # They had a nickname before
+        #    msg = f"{after.mention} changed their nickname from {before.nick} to {after.nick}"
+        #channel = bot.get_channel(1127200981512372264)
+        #await channel.send(msg)
+        
+# When user update their username, the sql username also neeeds to be changed.
+@bot.event
+async def on_user_update(before,after):
+    channel = bot.get_channel(1127200981512372264)
+    if before.name!=after.name:
+        await channel.send(f'{before.name} has changed name to {after.name}.')
+        query = f"UPDATE {RECORD} SET username = %s WHERE username = %s"
+        cur.execute(query, (after.name, before.name))
+        try:
+            cur.execute(query)
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            print("An error occurred", e)
+        
+#Update member status and activity
+@bot.event
+async def on_presence_update(before,after):
+    channel = bot.get_channel(1127200981512372264)
     if before.status != after.status:
-        print("Not working")
-        #channel = bot.get_channel(1127200981512372264) # Replace 'ID' with your channel ID
-        #await channel.send(f'{before.name} has changed status from {before.status} to {after.status}.')
+        await channel.send(f'{before.name} has changed status from {before.status} to {after.status}.')
+    if before.activity != after.activity and after.activity is not None:
+        await channel.send(f'{before.name} says: {after.activity}')
 
 # Use openai's model to create a gpt chatbox.      
 def generate_response(message):
