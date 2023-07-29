@@ -164,7 +164,7 @@ async def view(ctx):
     data=cur.fetchall()
     embed = discord.Embed(title="Level")
     for row in data:
-        value="Level: "+str(row[1])+"Exp: "+str(row[2])
+        value="Level: "+str(row[1])+"   Exp: "+str(row[2])
         embed.add_field(name=row[0],value=value,inline=True)
     await ctx.send(embed=embed)
 # Command to add motivation sentence to sql table
@@ -282,6 +282,20 @@ async def on_message(message):
         except Exception as e:
             conn.rollback()
             print("An error occurred", e)
+        cur.execute(f"SELECT level,exp from {RECORD} WHERE username='{bot.user.name}'")
+        val=cur.fetchall()
+        exceed=int(val[0])*500
+        current=int(val[1])
+        if current>=exceed:
+            over=current-exceed
+            await message.channel.send(f"Level UPP for {bot.user.name} to level {int(val[0])+1} !!!!!")
+            query=f"UPDATE {RECORD} SET level={int(val[0])+1},exp={over} WHERE username='{bot.user.name}'"
+            try:
+                cur.execute(query)
+                conn.commit()
+            except Exception as e:
+                conn.rollback()
+                print("An error occurred", e)
         return
     username = str(message.author).split("#")[0]
     channel = str(message.channel.name)
