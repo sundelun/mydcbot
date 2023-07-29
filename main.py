@@ -121,7 +121,11 @@ async def on_presence_update(before,after):
     if before.status != after.status:
         await channel.send(f'{before.name} has changed status from {before.status} to {after.status}.')
     if before.activity != after.activity and after.activity is not None:
-        await channel.send(f'{before.name} says: {after.activity}')
+        if after.activity.type == discord.ActivityType.playing:
+            await channel.send(f'{before.name} is playing: {after.activity.name}')
+        else:
+            await channel.send(f'{before.name} says: {after.activity}')
+    
 
 # Use openai's model to create a gpt chatbox.      
 def generate_response(message):
@@ -160,7 +164,8 @@ async def view(ctx):
     data=cur.fetchall()
     embed = discord.Embed(title="Level")
     for row in data:
-        embed.add_field(name=row[0],value=row[1],inline=False)
+        value="Level: "+str(row[1])+"Exp: "+str(row[2])
+        embed.add_field(name=row[0],value=value,inline=True)
     await ctx.send(embed=embed)
 # Command to add motivation sentence to sql table
 @bot.command()
