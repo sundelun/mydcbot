@@ -283,9 +283,13 @@ async def on_message(message):
             conn.rollback()
             print("An error occurred", e)
         cur.execute(f"SELECT level,exp from {RECORD} WHERE username='{bot.user.name}'")
-        val=cur.fetchall()
-        exceed=int(val[0])*500
-        current=int(val[1])
+        val=cur.fetchone()
+        if val is not None:
+            exceed=int(val[0])*500
+            current=int(val[1])
+        else:
+            print("No such user")
+            return
         if current>=exceed:
             over=current-exceed
             await message.channel.send(f"Level UPP for {bot.user.name} to level {int(val[0])+1} !!!!!")
