@@ -87,15 +87,11 @@ async def on_ready():
             cur.execute(query,(temp,))
             conn.commit()
     
-
+#Currently no actual functions
 @bot.event
 async def on_member_update(before, after):
-    if before.nick != after.nick:  # If their nicknames aren't equal, then their nick changed.
+    if before.nick != after.nick: 
         print("is it changed?")
-        #if before.nick is None:  # They didn't have a nickname before
-        #    msg = f"{after.mention} changed their username from {before.name} to {after.name}"
-        #else:  # They had a nickname before
-        #    msg = f"{after.mention} changed their nickname from {before.nick} to {after.nick}"
         #channel = bot.get_channel(1127200981512372264)
         #await channel.send(msg)
         
@@ -120,6 +116,7 @@ async def on_presence_update(before,after):
     channel = bot.get_channel(1127200981512372264)
     if before.status != after.status:
         await channel.send(f'{before.name} has changed status from {before.status} to {after.status}.')
+    #Different activity type print different format
     if before.activity != after.activity and after.activity is not None:
         if after.activity.type == discord.ActivityType.playing:
             await channel.send(f'{before.name} is playing: {after.activity.name}')
@@ -158,6 +155,7 @@ async def gptModel(ctx, *,question):
     #Return the answer.
     await ctx.send(f"{generate_response(question)}")
 
+#View every member's level in this server
 @bot.command()
 async def view(ctx):
     cur.execute(f"SELECT username,level,exp from {RECORD}")
@@ -167,6 +165,7 @@ async def view(ctx):
         value="Level: "+str(row[1])+"   Exp: "+str(row[2])
         embed.add_field(name=row[0],value=value,inline=True)
     await ctx.send(embed=embed)
+
 # Command to add motivation sentence to sql table
 @bot.command()
 async def addSentence(ctx, *,text):
@@ -174,6 +173,7 @@ async def addSentence(ctx, *,text):
     cur.execute(query, (text,))
     # We have to commit changes in postgresql to save
     conn.commit()
+
 # Print status of member in discord server
 @bot.command()
 async def status(ctx, member: discord.Member = None):
@@ -274,15 +274,18 @@ async def weather(ctx, *, city: str):
 async def on_message(message):
 	# Bot and user have to be different.
     if message.author == bot.user:
-        query=f"UPDATE {RECORD} SET exp=exp+5 WHERE username='{bot.user.name}'"
-        print(query)
+        # Get exp when send a message for bot
+        query=f"UPDATE {RECORD} SET exp=exp+5 WHERE username = %s"
         try:
-            cur.execute(query)
+            print(query)
+            cur.execute(query, (bot.user.name,))
             conn.commit()
         except Exception as e:
             conn.rollback()
             print("An error occurred", e)
-        cur.execute(f"SELECT level,exp from {RECORD} WHERE username='{bot.user.name}'")
+        # For bots, check if they are eligible for level up.
+        query=f"SELECT level,exp from {RECORD} WHERE username = %s"
+        cur.execute(query, (bot.user.name,))
         val=cur.fetchone()
         if val is not None:
             exceed=int(val[0])*500
@@ -293,9 +296,9 @@ async def on_message(message):
         if current>=exceed:
             over=current-exceed
             await message.channel.send(f"Level UPP for {bot.user.name} to level {int(val[0])+1} !!!!!")
-            query=f"UPDATE {RECORD} SET level={int(val[0])+1},exp={over} WHERE username='{bot.user.name}'"
+            query=f"UPDATE {RECORD} SET level={int(val[0])+1},exp={over} WHERE username = %s"
             try:
-                cur.execute(query)
+                cur.execute(query, (bot.user.name,))
                 conn.commit()
             except Exception as e:
                 conn.rollback()
@@ -309,22 +312,22 @@ async def on_message(message):
     # Print the information about message.
     print(f'Message {user_message} by {username} on {channel}')
     
-    # Add exp to each user
+    # Add exp to each user who sends message in this server
     if len(user_message)>0:
-        query=f"UPDATE {RECORD} SET exp=exp+5 WHERE username='{username}'"
-        print(query)
+        query=f"UPDATE {RECORD} SET exp=exp+5 WHERE username = %s"
         try:
-            cur.execute(query)
+            print(query)
+            cur.execute(query, (username,))
             conn.commit()
         except Exception as e:
             conn.rollback()
             print("An error occurred", e)
     if message.attachments:
         value = len(message.attachments)*10
-        query=f"UPDATE {RECORD} SET exp=exp+{value} WHERE username='{username}'"
-        print(query)
+        query=f"UPDATE {RECORD} SET exp=exp+{value} WHERE username = %s"
         try:
-            cur.execute(query)
+            print(query)
+            cur.execute(query, (username,))
             conn.commit()
         except Exception as e:
             conn.rollback()
