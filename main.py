@@ -94,7 +94,23 @@ async def on_member_update(before, after):
         print("is it changed?")
         #channel = bot.get_channel(1127200981512372264)
         #await channel.send(msg)
-        
+
+#When member join the server
+@bot.event
+async def on_member_join(member):
+    channel = bot.get_channel(1127200981512372264)
+    query=f"INSERT INTO {RECORD} (username) VALUES (%s)"
+    cur.execute(query,(member.name))
+    conn.commit()
+    await channel.send(f"Welcome {member.name} to the GAP sever!!!!")
+
+#When member leave the server
+@bot.event
+async def on_member_remove(member):
+    query=f"DELETE FROM {RECORD} WHERE username = (%s)"
+    cur.execute(query,(member.name))
+    conn.commit()
+
 # When user update their username, the sql username also neeeds to be changed.
 @bot.event
 async def on_user_update(before,after):
