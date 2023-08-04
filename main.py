@@ -7,6 +7,7 @@ import json
 import wolframalpha
 import requests
 import psycopg2
+import youtube_dl
 
 # Importings and loadings
 from dotenv import load_dotenv
@@ -138,8 +139,32 @@ async def on_presence_update(before,after):
             await channel.send(f'{before.name} is playing: {after.activity.name}')
         else:
             await channel.send(f'{before.name} says: {after.activity}')
-    
 
+  
+@bot.command(name='join', help='Tells the bot to join the voice channel')
+async def join(ctx):
+    if not ctx.message.author.voice:
+        await ctx.send("{} is not connected to a voice channel".format(ctx.message.author.name))
+        return
+    else:
+        channel = ctx.message.author.voice.channel
+    await channel.connect()
+
+@bot.command(name='leave', help='To make the bot leave the voice channel')
+async def leave(ctx):
+    voice_client = ctx.message.guild.voice_client
+    if voice_client.is_connected():
+        await voice_client.disconnect()
+    else:
+        await ctx.send("The bot is not connected to a voice channel.")
+
+@bot.command()
+async def song_help(ctx):
+    embed=discord.Embed(title='Songs options')
+    embed.add_field(name='To play a song: Type in !play_song #',value='',inline=False)
+    embed.add_field(name='Number and corresponding song name below',value='',inline=False)
+    embed.add_field(name='',value='1: Whatever It Take',inline=False)
+    await ctx.send(embed=embed)
 # Use openai's model to create a gpt chatbox.      
 def generate_response(message):
     openai_api_url = "https://api.openai.com/v1/engines/text-davinci-002/completions"
