@@ -15,6 +15,7 @@ from discord.ext import commands
 from googletrans import Translator
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from youtube import YTDLSource
 
 # Loads the .env file
 load_dotenv()
@@ -165,6 +166,30 @@ async def song_help(ctx):
     embed.add_field(name='Number and corresponding song name below',value='',inline=False)
     embed.add_field(name='',value='1: Whatever It Take',inline=False)
     await ctx.send(embed=embed)
+    
+@bot.command()
+async def play_song(ctx,num):
+    if num == '1':
+        print("yes")
+        try :
+            server = ctx.message.guild
+            voice_channel = server.voice_client
+
+            async with ctx.typing():
+                filename = await YTDLSource.from_url('https://www.youtube.com/watch?v=M66U_DuMCS8', loop=bot.loop)
+                voice_channel.play(discord.FFmpegPCMAudio(executable="ffmpeg.exe", source=filename))
+            await ctx.send('**Now playing:** {}'.format(filename))
+        except:
+            await ctx.send("The bot is not connected to a voice channel.")
+
+@bot.command(name='stop', help='Stops the song')
+async def stop(ctx):
+    voice_client = ctx.message.guild.voice_client
+    if voice_client.is_playing():
+        await voice_client.stop()
+    else:
+        await ctx.send("The bot is not playing anything at the moment.")
+
 # Use openai's model to create a gpt chatbox.      
 def generate_response(message):
     openai_api_url = "https://api.openai.com/v1/engines/text-davinci-002/completions"
