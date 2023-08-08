@@ -164,7 +164,7 @@ async def song_help(ctx):
     embed=discord.Embed(title='Songs options')
     embed.add_field(name='To play a song: Type in !play_song #',value='',inline=False)
     embed.add_field(name='Number and corresponding song name below',value='',inline=False)
-    embed.add_field(name='',value='1: Whatever It Take',inline=False)
+    embed.add_field(name='',value='1: Whatever It Takes',inline=False)
     await ctx.send(embed=embed)
     
 @bot.command()
