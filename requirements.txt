@@ -26,3 +26,5 @@ wolframalpha==5.0.0
 requests==2.31.0
 apscheduler==3.10.1
 psycopg2==2.9.6
+youtube-dl==2021.12.17
+googletransx==2.4.2
