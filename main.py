@@ -409,10 +409,10 @@ async def on_message(message):
         return
     if current>=exceed:
         over=current-exceed
-        await message.channel.send(f"Level UPP for {bot.user.name} to level {int(val[0])+1} !!!!!")
+        await message.channel.send(f"Level UPP for {username} to level {int(val[0])+1} !!!!!")
         query=f"UPDATE {RECORD} SET level={int(val[0])+1},exp={over} WHERE username = %s"
         try:
-            cur.execute(query, (bot.user.name,))
+            cur.execute(query, (username,))
             conn.commit()
         except Exception as e:
             conn.rollback()
