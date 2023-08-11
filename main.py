@@ -399,7 +399,7 @@ async def on_message(message):
             conn.rollback()
             print("An error occurred", e)
     query=f"SELECT level,exp from {RECORD} WHERE username = %s"
-    cur.execute(query, (username))
+    cur.execute(query, (username,))
     val=cur.fetchone()
     if val is not None:
         exceed=int(val[0])*500
