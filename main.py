@@ -297,6 +297,9 @@ async def translate(ctx, *, text):
     # Send the translated text
     await ctx.send(translated.text)
 
+@bot.command()
+async def coffee(ctx):
+    await ctx.send(file=discord.File("images/coffee.jpg"))
 # Small weather report
 @bot.command()
 async def weather(ctx, *, city: str):
