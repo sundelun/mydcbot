@@ -15,7 +15,7 @@ from discord.ext import commands
 from googletrans import Translator
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from youtubenot import YTDLSource
+from youtube import YTDLSource
 
 # Loads the .env file
 load_dotenv()
