@@ -15,7 +15,7 @@ from discord.ext import commands
 from googletrans import Translator
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from youtube import YTDLSource
+from youtubenot import YTDLSource
 
 # Loads the .env file
 load_dotenv()
@@ -171,16 +171,12 @@ async def song_help(ctx):
 async def play_song(ctx,num):
     if num == '1':
         print("yes")
-        try :
-            server = ctx.message.guild
-            voice_channel = server.voice_client
+        if not ctx.voice_client.is_connected():
+            await ctx.author.voice.channel.connect()
 
-            async with ctx.typing():
-                filename = await YTDLSource.from_url('https://www.youtube.com/watch?v=M66U_DuMCS8', loop=bot.loop)
-                voice_channel.play(discord.FFmpegPCMAudio(executable="ffmpeg.exe", source=filename))
-            await ctx.send('**Now playing:** {}'.format(filename))
-        except:
-            await ctx.send("The bot is not connected to a voice channel.")
+        player = await YTDLSource.from_url('https://www.youtube.com/watch?v=M66U_DuMCS8', loop=bot.loop, stream=True)
+        ctx.voice_client.play(player, after=lambda e: print(f'Player error: {e}') if e else None)
+    await ctx.send(f'Now playing: {player.title}')
 
 @bot.command(name='stop', help='Stops the song')
 async def stop(ctx):
