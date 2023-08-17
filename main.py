@@ -255,6 +255,26 @@ async def ask(ctx, *, question):
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
 
+@bot.command()
+async def aaa(ctx):
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+    }
+    url='https://www.youtube.com/watch?v=M66U_DuMCS8'
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+        info = ydl.extract_info(url, download=False)
+        file_name = "some default name"
+        if 'entries' in info:
+            file_name = info['entries'][0]['title']
+        else:
+            file_name = info['title']
+        ctx.voice_client.play(discord.FFmpegPCMAudio(executable="ffmpeg", source=file_name + ".mp3"))
 # A poll command
 @bot.command(name='poll')
 async def poll(ctx, question, *options: str):
