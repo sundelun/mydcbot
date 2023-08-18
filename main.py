@@ -8,6 +8,7 @@ import wolframalpha
 import requests
 import psycopg2
 import youtube_dl
+import re
 
 # Importings and loadings
 from dotenv import load_dotenv
@@ -41,6 +42,14 @@ intents.guilds=True
 
 #Create an instance of bot
 bot = commands.Bot(command_prefix='!',intents=intents)
+
+def is_url(text):
+    url_pattern = re.compile(r'https?://\S+\.\S+')
+    return bool(url_pattern.search(text))
+
+def is_image_url(text):
+    image_url_pattern = re.compile(r'https?://\S+\.(jpg|jpeg|png|gif)')
+    return bool(image_url_pattern.search(text))
 
 #quotes=["春风若有怜花意，可否与我再少年","home is where you are","不必太张扬，是花自然香","穷不怪父，丑不怪母，孝不比兄，苦不责妻，气不凶子，一生向阳"]
 #Connect with database
@@ -437,7 +446,7 @@ async def on_message(message):
             conn.rollback()
             print("An error occurred", e)
     # Auto translate other non-english text to english
-    if len(user_message)>0:
+    if len(user_message)>0 and not is_image_url(user_message):
         translator_mes=Translator()
         language=translator_mes.detect(user_message).lang
     # In case not annoying other channel.
