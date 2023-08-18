@@ -446,6 +446,7 @@ async def on_message(message):
             conn.rollback()
             print("An error occurred", e)
     # Auto translate other non-english text to english
+    language="en"
     if len(user_message)>0 and not is_url(user_message):
         translator_mes=Translator()
         language=translator_mes.detect(user_message).lang
