@@ -17,6 +17,7 @@ from googletrans import Translator
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from youtube import YTDLSource
+from datetime import datetime
 
 # Loads the .env file
 load_dotenv()
@@ -42,6 +43,7 @@ intents.guilds=True
 
 #Create an instance of bot
 bot = commands.Bot(command_prefix='!',intents=intents)
+scheduler = AsyncIOScheduler()
 
 def is_url(text):
     url_pattern = re.compile(r'https?://\S+\.\S+')
@@ -72,11 +74,16 @@ async def day_quote():
     quote=random.choice(quotes2)
     channel=bot.get_channel(1127200981512372264)
     await channel.send(quote)
+
+# Send message
+async def send_message(channel_id: int, message: str):
+    """Send the reminder message to the channel."""
+    channel = bot.get_channel(channel_id)
+    await channel.send(message)
 # dcbot gets activated
 @bot.event
 async def on_ready():
     # Sends a quote every day at 9:00
-    scheduler = AsyncIOScheduler()
     scheduler.add_job(day_quote, CronTrigger(hour="9", minute="0"))
     scheduler.start()
     # Number of how many servers dcbot has connected to
@@ -236,6 +243,15 @@ async def view(ctx):
         value="Level: "+str(row[1])+"   Exp: "+str(row[2])
         embed.add_field(name=row[0],value=value,inline=True)
     await ctx.send(embed=embed)
+
+@bot.command()
+async def remindme(ctx,date: str, time:str, *,message: str):
+    # Convert the date_time string to a datetime object
+    strtime=date+' '+time
+    reminder_time = datetime.strptime(strtime, '%Y-%m-%d %H:%M')
+    
+    # Schedule the send_message task to run on the specific date and time
+    scheduler.add_job(send_message, 'date', run_date=reminder_time, args=[ctx.channel.id, message])
 
 # Command to add motivation sentence to sql table
 @bot.command()
